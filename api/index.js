@@ -71,6 +71,7 @@ app.post('/securityshield/v0/dashboard', checkPassword, (req, res) => {
     <h1>Admin UI Dashboard</h1>
     <p>Welcome, Admin!</p>
     <form action="/securityshield/v0/dashboard/devmode" method="post">
+      <input type="hidden" name="password" value="${req.body.password}">
       <button type="submit">Enable Dev Mode</button>
     </form>
   `);
