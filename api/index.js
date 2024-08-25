@@ -25,7 +25,7 @@ function checkOrigin(req, res, next) {
 
 // Admin psw check middleware
 function checkPassword(req, res, next) {
-  const password = req.query.password;
+  const password = req.body.password;
   if (password === adminPassword) {
     next();
   } else {
@@ -53,13 +53,25 @@ app.get('/securityshield/v1/log', (req, res) => {
   res.json(requestDetails);
 });
 
-// Admin UI Dashboard
-app.get('/securityshield/v0/dashboard', checkPassword, (req, res) => {
+// Admin UI Dashboard (displays password input form)
+app.get('/securityshield/v0/dashboard', (req, res) => {
   res.send(`
-    <h1>SecurityShield Dashbaord</h1>
-    <p>Hello, Admin!</p>
+    <h1>Admin UI Dashboard</h1>
+    <form action="/securityshield/v0/dashboard" method="post">
+      <label for="password">Enter Password:</label>
+      <input type="password" id="password" name="password" required>
+      <button type="submit">Submit</button>
+    </form>
+  `);
+});
+
+// Admin UI Dashboard (password protected, POST request)
+app.post('/securityshield/v0/dashboard', checkPassword, (req, res) => {
+  res.send(`
+    <h1>Admin UI Dashboard</h1>
+    <p>Welcome, Admin!</p>
     <form action="/securityshield/v0/dashboard/devmode" method="post">
-      <button type="submit">Enable Dev Mode (10 minutes)</button>
+      <button type="submit">Enable Dev Mode</button>
     </form>
   `);
 });
