@@ -18,7 +18,7 @@ function checkOrigin(req, res, next) {
     if (origin === allowedOrigin) {
       next(); // move on if request is from allowed origin
     } else {
-      res.status(403).json({ error: 'Access denied' });
+      res.status(403).json({ error: 'An unknown error occured.' });
     }
   }
 }
@@ -29,18 +29,18 @@ function checkPassword(req, res, next) {
   if (password === adminPassword) {
     next();
   } else {
-    res.status(403).json({ error: 'Invalid password' });
+    res.status(403).json({ error: 'An unknown error occured.' });
   }
 }
 
 // API status - general status of whole API
 app.get('/ping', (req, res) => {
-  res.json({ status: 'API is running' });
+  res.json({ status: 'PixelVerse Systems API is up and running. All checks return normal. Please email contact@pixelverse.tech if you experience any errors.' });
 });
 
 // Status - see if SecurityShield is active
 app.get('/securityshield/v1/status', checkOrigin, (req, res) => {
-  res.json({ status: 'SecurityShield is active' });
+  res.json({ status: 'SecurityShield is currently active.' });
 });
 
 // Log - returns with request info
@@ -54,31 +54,32 @@ app.get('/securityshield/v1/log', (req, res) => {
 });
 
 // Admin UI Dashboard (displays password input form)
-app.get('/securityshield/v0/dashboard', (req, res) => {
+app.get('/securityshield/v0/identity', (req, res) => {
   res.send(`
-    <h1>Admin UI Dashboard</h1>
-    <form action="/securityshield/v0/dashboard" method="post">
-      <label for="password">Enter Password:</label>
+    <h1>SecurityShield Needs to Verify Your Identity</h1>
+    <form action="/securityshield/v0/identity" method="post">
+      <label for="password">Enter your SecureID:</label>
       <input type="password" id="password" name="password" required>
-      <button type="submit">Submit</button>
+      <button type="submit">Verify</button>
     </form>
   `);
 });
 
 // Admin UI Dashboard (password protected, POST request)
-app.post('/securityshield/v0/dashboard', checkPassword, (req, res) => {
+app.post('/securityshield/v0/identity', checkPassword, (req, res) => {
   res.send(`
-    <h1>Admin UI Dashboard</h1>
+    <h1>SecurityShield Dashboard</h1>
     <p>Welcome, Admin!</p>
-    <form action="/securityshield/v0/dashboard/devmode" method="post">
+    <form action="/securityshield/v0/identity/devmode" method="post">
       <input type="hidden" name="password" value="${req.body.password}">
-      <button type="submit">Enable Dev Mode</button>
+      <button type="submit">Enable Dev Mode (10 minutes)</button>
+      <p>Enabling dev mode allows traffic from any url for 10 minutes. Be careful!</p>
     </form>
   `);
 });
 
 // Dev Mode - 10 minutes
-app.post('/securityshield/v0/dashboard/devmode', checkPassword, (req, res) => {
+app.post('/securityshield/v0/identity/devmode', checkPassword, (req, res) => {
   devMode = true;
   if (devModeTimer) {
     clearTimeout(devModeTimer);
@@ -94,23 +95,28 @@ app.post('/securityshield/v0/dashboard/devmode', checkPassword, (req, res) => {
 });
 
 // Google Gemini API Key (restricted access)
-app.get('/securityshield/v1/KJHG88293543', checkOrigin, (req, res) => {
+app.post('/securityshield/v1/KJHG88293543', checkOrigin, (req, res) => {
   res.json({ apiKey: 'google-gemini-api' });
 });
 
 // OpenAI API Key (restricted access)
-app.get('/securityshield/v1/DHGJ35274528', checkOrigin, (req, res) => {
+app.post('/securityshield/v1/DHGJ35274528', checkOrigin, (req, res) => {
   res.json({ apiKey: 'openai-api' });
 });
 
 // Groq API Key (restricted access)
-app.get('/securityshield/v1/GNDO38562846', checkOrigin, (req, res) => {
+app.post('/securityshield/v1/GNDO38562846', checkOrigin, (req, res) => {
   res.json({ apiKey: 'groq-api' });
 });
 
 // ElevenLabs API Key (restricted access)
-app.get('/securityshield/v1/WIFN48264853', checkOrigin, (req, res) => {
+app.post('/securityshield/v1/WIFN48264853', checkOrigin, (req, res) => {
   res.json({ apiKey: 'elevenlabs-api' });
+});
+
+// BETA test
+app.post('/securityshield/beta/KJHG88293543', (req, res) => {
+  res.json({ apiKey: 'google-gemini-api' });
 });
 
 module.exports = app;
