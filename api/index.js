@@ -7,6 +7,8 @@ app.use(express.urlencoded({ extended: true }));
 // temp chat
 const chatRouter = require('./chat');
 
+require('dotenv').config();
+
 // use chat router under the /chat path
 app.use('/chat', chatRouter);
 
