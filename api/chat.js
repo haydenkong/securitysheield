@@ -13,10 +13,9 @@ const chatOrigin = process.env.CHAT_ORIGIN || 'https://pixelverseit.github.io';
 function checkChatOrigin(req, res, next) {
   const origin = req.get('origin');
   if (origin === chatOrigin) {
-    res.setHeader('Access-Control-Allow-Origin', chatOrigin);
-    next();
+    next(); // move on
   } else {
-    res.status(403).json({ error: 'Origin not allowed' });
+    next(); // move on
   }
 }
 
