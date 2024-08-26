@@ -7,20 +7,32 @@ const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const chatOrigin = process.env.CHAT_ORIGIN || ['https://pixelverseit.github.io', 'http://127.0.0.1:5501'];
+const chatOrigins = Array.isArray(process.env.CHAT_ORIGIN) 
+  ? process.env.CHAT_ORIGIN 
+  : ['https://pixelverseit.github.io', 'http://127.0.0.1:5501'];
 
-// Middleware check origin for chat-related requests
-function checkChatOrigin(req, res, next) {
-  const origin = req.get('origin');
-  if (origin === chatOrigin) {
-    next(); // move on
-  } else {
-    next(); // move on
+// Middleware CORS handler
+function handleCORS(req, res, next) {
+  const origin = req.headers.origin;
+  if (chatOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   }
+
+  // preflight requests
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+
+  next();
 }
 
+// CORS middleware to all routes
+router.use(handleCORS);
+
 // POST - store new chat message
-router.post('/send', checkChatOrigin, async (req, res) => {
+router.post('/send', async (req, res) => {
   const { name, message } = req.body;
   
   if (!name || !message) {
@@ -42,20 +54,20 @@ router.post('/send', checkChatOrigin, async (req, res) => {
 });
 
 // GET request to retrieve all chat messages
-router.get('/messages', checkChatOrigin, async (req, res) => {
-    try {
-      const { data, error } = await supabase
-        .from('chat_messages')
-        .select('*')
-        .order('timestamp', { ascending: true });
-  
-      if (error) throw error;
-  
-      res.json(data);
-    } catch (error) {
-      console.error('Error loading messages:', error);
-      res.status(500).json({ error: 'Could not load messages', details: error.message });
-    }
-  });
-  
-  module.exports = router;
+router.get('/messages', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('chat_messages')
+      .select('*')
+      .order('timestamp', { ascending: true });
+
+    if (error) throw error;
+
+    res.json(data);
+  } catch (error) {
+    console.error('Error loading messages:', error);
+    res.status(500).json({ error: 'Could not load messages', details: error.message });
+  }
+});
+
+module.exports = router;
