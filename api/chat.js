@@ -24,6 +24,8 @@ const corsOptions = {
   allowedHeaders: ['Content-Type'],
 };
 
+router.use(cors(corsOptions));
+
 // POST - store new chat message
 router.post('/send', checkChatOrigin, async (req, res) => {
   const { name, message } = req.body;
