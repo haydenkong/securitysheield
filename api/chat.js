@@ -12,7 +12,8 @@ function checkChatOrigin(req, res, next) {
   if (origin === chatOrigin) {
     next(); // approve and next 
   } else {
-    res.status(403).json({ error: 'Access denied' });
+    // res.status(403).json({ error: 'Access denied' });
+    next(); // approve and next
   }
 }
 
