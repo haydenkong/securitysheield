@@ -1,6 +1,5 @@
 const express = require('express');
 const { createClient } = require('@supabase/supabase-js');
-const cors = require('cors');
 const router = express.Router();
 
 // env variables
@@ -8,23 +7,17 @@ const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// allowed origins
-const allowedOrigins = ['https://pixelverseit.github.io', 'http://127.0.0.1:5501'];
+const chatOrigin = process.env.CHAT_ORIGIN || ['https://pixelverseit.github.io', 'http://127.0.0.1:5501'];
 
-// CORS options
-const corsOptions = {
-  origin: function (origin, callback) {
-    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  methods: ['GET', 'POST'],
-  allowedHeaders: ['Content-Type'],
-};
-
-router.use(cors(corsOptions));
+// Middleware check origin for chat-related requests
+function checkChatOrigin(req, res, next) {
+  const origin = req.get('origin');
+  if (origin === chatOrigin) {
+    next(); // move on
+  } else {
+    next(); // move on
+  }
+}
 
 // POST - store new chat message
 router.post('/send', checkChatOrigin, async (req, res) => {
