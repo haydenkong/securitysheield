@@ -1,14 +1,8 @@
 const express = require('express');
 const app = express();
+const bodyParser = require('body-parser');
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// temp chat
-const chatRouter = require('./chat');
-
-// use chat router under the /chat path
-app.use('/chat', chatRouter);
+app.use(bodyParser.urlencoded({ extended: true }));
 
 const allowedOrigin = 'https://ai.pixelverse.tech';
 const adminPassword = 'a95XE5Is4dXlvHJDN95sZIDEJ0Ydm6YwDjFz8s6N16yYjk3RkB'; 
@@ -123,11 +117,6 @@ app.post('/securityshield/v1/WIFN48264853', checkOrigin, (req, res) => {
 // BETA test
 app.post('/securityshield/beta/KJHG88293543', (req, res) => {
   res.json({ apiKey: 'google-gemini-api' });
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
 });
 
 module.exports = app;
