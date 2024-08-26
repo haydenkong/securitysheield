@@ -70,4 +70,43 @@ router.get('/messages', async (req, res) => {
   }
 });
 
+// POST - store new journal entry
+router.post('/journal', async (req, res) => {
+  const { slack_handle, profile_url, message, name } = req.body;
+  
+  if (!slack_handle || !message || !name) {
+    return res.status(400).json({ error: 'Slack handle, message, and name are required' });
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('journal')
+      .insert([{ slack_handle, profile_url, message, name }]);
+
+    if (error) throw error;
+
+    res.status(200).json({ success: 'Journal entry saved successfully', data });
+  } catch (error) {
+    console.error('Error saving journal entry:', error);
+    res.status(500).json({ error: 'Could not save journal entry', details: error.message });
+  }
+});
+
+// GET - retrieve all journal entries
+router.get('/journal', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('journal')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    res.json(data);
+  } catch (error) {
+    console.error('Error loading journal entries:', error);
+    res.status(500).json({ error: 'Could not load journal entries', details: error.message });
+  }
+});
+
 module.exports = router;
