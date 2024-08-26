@@ -3,7 +3,7 @@ const { createClient } = require('@supabase/supabase-js');
 const router = express.Router();
 
 const SUPABASE_URL = 'https://nvriywibysvgezidjira.supabase.co';
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im52cml5d2lieXN2Z2V6aWRqaXJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjQ2NTAzMjQsImV4cCI6MjA0MDIyNjMyNH0.39Rvs4oXsbc92uYBVzMZ7Ov25ACczgn_Fp6lbCB0rZ4";
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const chatOrigin = 'https://pixelverseit.github.io';
