@@ -16,7 +16,7 @@ function handleCORS(req, res, next) {
   const origin = req.headers.origin;
   if (chatOrigins.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   }
 
@@ -70,6 +70,21 @@ router.get('/messages', async (req, res) => {
   }
 });
 
+
+// generate editID
+function generateEditID() {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const numbers = '0123456789';
+  let result = '';
+  for (let i = 0; i < 4; i++) {
+    result += characters.charAt(Math.floor(Math.random() * characters.length));
+  }
+  for (let i = 0; i < 4; i++) {
+    result += numbers.charAt(Math.floor(Math.random() * numbers.length));
+  }
+  return result;
+}
+
 // POST - store new journal entry
 router.post('/journal', async (req, res) => {
     const { slack_handle, profile_url, message, name } = req.body;
@@ -92,16 +107,44 @@ router.post('/journal', async (req, res) => {
         }
 
         const timestamp = new Date().toISOString();
+        const editID = generateEditID();
         const { data, error } = await supabase
             .from('journal')
-            .insert([{ slack_handle, profile_url, message, name, timestamp }]);
+            .insert([{ slack_handle, profile_url, message, name, timestamp, editID }]);
 
         if (error) throw error;
 
-        res.status(200).json({ success: 'Journal entry saved successfully', data });
+        res.status(200).json({ success: 'Journal entry saved successfully', data, editID });
     } catch (error) {
         console.error('Error saving journal entry:', error);
         res.status(500).json({ error: 'Could not save journal entry', details: error.message });
+    }
+});
+
+// PUT - edit existing journal entry
+router.put('/journal', async (req, res) => {
+    const { editID, message } = req.body;
+
+    if (!editID || !message) {
+        return res.status(400).json({ error: 'EditID and message are required' });
+    }
+
+    try {
+        const { data, error } = await supabase
+            .from('journal')
+            .update({ message })
+            .match({ editID });
+
+        if (error) throw error;
+
+        if (data && data.length === 0) {
+            return res.status(404).json({ error: 'No entry found with the provided editID' });
+        }
+
+        res.status(200).json({ success: 'Journal entry updated successfully', data });
+    } catch (error) {
+        console.error('Error updating journal entry:', error);
+        res.status(500).json({ error: 'Could not update journal entry', details: error.message });
     }
 });
 
@@ -121,7 +164,5 @@ router.get('/journal', async (req, res) => {
         res.status(500).json({ error: 'Could not load journal entries', details: error.message });
     }
 });
-
-
 
 module.exports = router;
