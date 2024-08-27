@@ -79,6 +79,18 @@ router.post('/journal', async (req, res) => {
     }
 
     try {
+        // check if slack_handle or name already exists for security
+        const { data: existingEntries, error: checkError } = await supabase
+            .from('journal')
+            .select('slack_handle, name')
+            .or(`slack_handle.eq.${slack_handle},name.eq.${name}`);
+
+        if (checkError) throw checkError;
+
+        if (existingEntries && existingEntries.length > 0) {
+            return res.status(403).json({ error: 'Slack handle or name already exists' });
+        }
+
         const timestamp = new Date().toISOString();
         const { data, error } = await supabase
             .from('journal')
