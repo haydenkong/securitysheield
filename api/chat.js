@@ -72,41 +72,44 @@ router.get('/messages', async (req, res) => {
 
 // POST - store new journal entry
 router.post('/journal', async (req, res) => {
-  const { slack_handle, profile_url, message, name } = req.body;
-  
-  if (!slack_handle || !message || !name) {
-    return res.status(400).json({ error: 'Slack handle, message, and name are required' });
-  }
+    const { slack_handle, profile_url, message, name } = req.body;
 
-  try {
-    const { data, error } = await supabase
-      .from('journal')
-      .insert([{ slack_handle, profile_url, message, name }]);
+    if (!slack_handle || !message || !name) {
+        return res.status(400).json({ error: 'Slack handle, message, and name are required' });
+    }
 
-    if (error) throw error;
+    try {
+        const timestamp = new Date().toISOString();
+        const { data, error } = await supabase
+            .from('journal')
+            .insert([{ slack_handle, profile_url, message, name, timestamp }]);
 
-    res.status(200).json({ success: 'Journal entry saved successfully', data });
-  } catch (error) {
-    console.error('Error saving journal entry:', error);
-    res.status(500).json({ error: 'Could not save journal entry', details: error.message });
-  }
+        if (error) throw error;
+
+        res.status(200).json({ success: 'Journal entry saved successfully', data });
+    } catch (error) {
+        console.error('Error saving journal entry:', error);
+        res.status(500).json({ error: 'Could not save journal entry', details: error.message });
+    }
 });
 
 // GET - retrieve all journal entries
 router.get('/journal', async (req, res) => {
-  try {
-    const { data, error } = await supabase
-      .from('journal')
-      .select('*')
-      .order('created_at', { ascending: false });
+    try {
+        const { data, error } = await supabase
+            .from('journal')
+            .select('*')
+            .order('timestamp', { ascending: false });
 
-    if (error) throw error;
+        if (error) throw error;
 
-    res.json(data);
-  } catch (error) {
-    console.error('Error loading journal entries:', error);
-    res.status(500).json({ error: 'Could not load journal entries', details: error.message });
-  }
+        res.json(data);
+    } catch (error) {
+        console.error('Error loading journal entries:', error);
+        res.status(500).json({ error: 'Could not load journal entries', details: error.message });
+    }
 });
+
+
 
 module.exports = router;
