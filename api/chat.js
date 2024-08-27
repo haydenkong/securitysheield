@@ -154,7 +154,7 @@ router.get('/journal', async (req, res) => {
         const { data, error } = await supabase
             .from('journal')
             .select('*')
-            .order('random()');
+            .order('timestamp', { ascending: false });
 
         if (error) throw error;
 
