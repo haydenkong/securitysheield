@@ -169,21 +169,21 @@ router.get('/journal', async (req, res) => {
     }
 });
 
-// GET request to retrieve all chat messages without CORS restrictions
-router.get('/messages-nocors', async (req, res) => {
+// GET request to retrieve all journal entries without CORS restrictions
+router.get('/journal-nocors', async (req, res) => {
     try {
         const { data, error } = await supabase
-            .from('chat_messages')
+            .from('journal')
             .select('*')
-            .order('timestamp', { ascending: true });
+            .order('timestamp', { ascending: false });
 
         if (error) throw error;
 
         res.setHeader('Access-Control-Allow-Origin', '*'); // Allow requests from any domain
         res.json(data);
     } catch (error) {
-        console.error('Error loading messages:', error);
-        res.status(500).json({ error: 'Could not load messages', details: error.message });
+        console.error('Error loading journal entries:', error);
+        res.status(500).json({ error: 'Could not load journal entries', details: error.message });
     }
 });
 
