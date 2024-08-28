@@ -13,19 +13,12 @@ const chatOrigins = Array.isArray(process.env.CHAT_ORIGIN)
 
 // Middleware CORS handler
 function handleCORS(req, res, next) {
-  const origin = req.headers.origin;
-  if (chatOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  }
+    // preflight requests
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+    }
 
-  // preflight requests
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(200);
-  }
-
-  next();
+    next();
 }
 
 // CORS middleware to all routes
