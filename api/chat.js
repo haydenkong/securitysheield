@@ -9,16 +9,23 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const chatOrigins = Array.isArray(process.env.CHAT_ORIGIN) 
   ? process.env.CHAT_ORIGIN 
-  : ['https://pixelverseit.github.io', 'http://127.0.0.1:5501', 'https://congenial-space-palm-tree-p4vr45j4gw43rwp7-3000.app.github.dev'];
+  : ['https://pixelverseit.github.io', 'http://127.0.0.1:5501'];
 
 // Middleware CORS handler
 function handleCORS(req, res, next) {
-    // preflight requests
-    if (req.method === 'OPTIONS') {
-        return res.sendStatus(200);
-    }
+  const origin = req.headers.origin;
+  if (chatOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  }
 
-    next();
+  // preflight requests
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+
+  next();
 }
 
 // CORS middleware to all routes
@@ -161,5 +168,24 @@ router.get('/journal', async (req, res) => {
         res.status(500).json({ error: 'Could not load journal entries', details: error.message });
     }
 });
+
+// GET request to retrieve all chat messages without CORS restrictions
+router.get('/messages-nocors', async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from('chat_messages')
+            .select('*')
+            .order('timestamp', { ascending: true });
+
+        if (error) throw error;
+
+        res.setHeader('Access-Control-Allow-Origin', '*'); // Allow requests from any domain
+        res.json(data);
+    } catch (error) {
+        console.error('Error loading messages:', error);
+        res.status(500).json({ error: 'Could not load messages', details: error.message });
+    }
+});
+
 
 module.exports = router;
