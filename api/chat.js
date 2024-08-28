@@ -33,24 +33,28 @@ router.use(handleCORS);
 
 // POST - store new chat message
 router.post('/send', async (req, res) => {
-  const { name, message } = req.body;
-  
-  if (!name || !message) {
-    return res.status(400).json({ error: 'Name and message are required' });
-  }
+    const { name, message } = req.body;
 
-  try {
-    const { data, error } = await supabase
-      .from('chat_messages')
-      .insert([{ name, message, timestamp: new Date().toISOString() }]);
+    if (!name || !message) {
+        return res.status(400).json({ error: 'Name and message are required' });
+    }
 
-    if (error) throw error;
+    if (message.length > 400) {
+        return res.status(400).json({ error: 'Message exceeds maximum length of 400 characters' });
+    }
 
-    res.status(200).json({ success: 'Message sent successfully', data });
-  } catch (error) {
-    console.error('Error saving message:', error);
-    res.status(500).json({ error: 'Could not save message', details: error.message });
-  }
+    try {
+        const { data, error } = await supabase
+            .from('chat_messages')
+            .insert([{ name, message, timestamp: new Date().toISOString() }]);
+
+        if (error) throw error;
+
+        res.status(200).json({ success: 'Message sent successfully', data });
+    } catch (error) {
+        console.error('Error saving message:', error);
+        res.status(500).json({ error: 'Could not save message', details: error.message });
+    }
 });
 
 // GET request to retrieve all chat messages
