@@ -170,7 +170,7 @@ router.get('/journal', async (req, res) => {
 });
 
 // GET request to retrieve all journal entries without CORS restrictions
-router.get('/journal-nocors', async (req, res) => {
+router.get('/arcadeweb', async (req, res) => {
     try {
         const { data, error } = await supabase
             .from('journal')
