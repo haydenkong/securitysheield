@@ -89,7 +89,7 @@ app.get('/securityshield/v1/log', (req, res) => {
 });
 
 // For dev mode activation & securityshield identity, allow all origins
-function allowAllOrigins(next) {
+function allowAllOrigins(req, res, next) {
   next();
 }
 
