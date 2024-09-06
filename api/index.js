@@ -30,38 +30,36 @@ let devMode = false;
 let devModeTimer = null;
 const adminPassword = process.env.ADMIN_PASSWORD; 
 
-// Setup CORS middleware for all routes
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
+// CORS configuration
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (devMode || !origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+
+// Apply CORS middleware
+app.use(cors(corsOptions));
+
+// Middleware to handle origin check
+function checkOrigin(req, res, next) {
+  const origin = req.get('origin');
   if (devMode || alwaysAccessibleRoutes.some(route => req.path.startsWith(route))) {
-    res.header('Access-Control-Allow-Origin', origin);
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
     next();
   } else if (allowedOrigins.includes(origin)) {
-    res.header('Access-Control-Allow-Origin', origin);
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
     next();
   } else {
-    res.status(403).json({ error: 'Not allowed by CORS' });
-  }
-});
-
-// Handle preflight requests
-app.options('*', cors());
-
-// Middleware to handle origin check (now only used for non-CORS checks)
-function checkOrigin(req, res, next) {
-  if (devMode || alwaysAccessibleRoutes.some(route => req.path.startsWith(route))) {
-    next(); // Allow if in dev mode or it's an always-accessible route
-  } else {
-    const origin = req.get('origin');
-    if (allowedOrigins.includes(origin)) {
-      next(); // Allow if from the correct origin
-    } else {
-      res.status(403).json({ error: 'An unknown error occurred' });
-    }
+    res.status(403).json({ error: 'Access denied' });
   }
 }
+
+// Apply checkOrigin middleware to all routes
+app.use(checkOrigin);
 
 // Admin password check middleware
 function checkPassword(req, res, next) {
@@ -69,7 +67,7 @@ function checkPassword(req, res, next) {
   if (password === adminPassword) {
     next();
   } else {
-    res.status(403).json({ error: 'An unknown error occurred.' });
+    res.status(403).json({ error: 'Access denied' });
   }
 }
 
@@ -110,6 +108,7 @@ app.post('/securityshield/v0/identity/devmode', checkPassword, (req, res) => {
   // set 10 minute timer
   devModeTimer = setTimeout(() => {
     devMode = false;
+    console.log('Dev mode disabled after 10 minutes');
   }, 10 * 60 * 1000);
 
   res.send(`
@@ -129,7 +128,7 @@ app.get('/ping', (req, res) => {
 });
 
 // Status - see if SecurityShield is active
-app.get('/securityshield/v1/status', checkOrigin, (req, res) => {
+app.get('/securityshield/v1/status', (req, res) => {
   res.json({ status: 'SecurityShield is currently active.' });
 });
 
@@ -149,22 +148,22 @@ app.get('/securityshield/v1/log', (req, res) => {
 });
 
 // Google Gemini API Key (restricted access)
-app.post('/securityshield/v1/KJHG88293543', checkOrigin, (req, res) => {
+app.post('/securityshield/v1/KJHG88293543', (req, res) => {
   res.json({ apiKey: process.env.GOOGLE_GEMINI_API_KEY });
 });
 
 // OpenAI API Key (restricted access)
-app.post('/securityshield/v1/DHGJ35274528', checkOrigin, (req, res) => {
+app.post('/securityshield/v1/DHGJ35274528', (req, res) => {
   res.json({ apiKey: process.env.OPENAI_API_KEY });
 });
 
 // Groq API Key (restricted access)
-app.post('/securityshield/v1/GNDO38562846', checkOrigin, (req, res) => {
+app.post('/securityshield/v1/GNDO38562846', (req, res) => {
   res.json({ apiKey: process.env.GROQ_API_KEY });
 });
 
 // ElevenLabs API Key (restricted access)
-app.post('/securityshield/v1/WIFN48264853', checkOrigin, (req, res) => {
+app.post('/securityshield/v1/WIFN48264853', (req, res) => {
   res.json({ apiKey: process.env.ELEVENLABS_API_KEY });
 });
 
