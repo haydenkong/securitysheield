@@ -63,12 +63,6 @@ app.get('/', (req, res) => {
   res.json({ status: 'Welcome to PixelVerse Systems API.' });
 });
 
-// API GitHub Deploy ID
-app.get('/vs', (req, res) => {
-  const commitId = process.env.GITHUB_SHA;
-  res.json({ deployId: commitId });
-});
-
 // API status - general status of whole API
 app.get('/ping', (req, res) => {
   res.json({ status: 'PixelVerse Systems API is up and running. All checks return normal. Please email contact@pixelverse.tech if you experience any errors.' });
