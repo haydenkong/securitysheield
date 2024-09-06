@@ -18,7 +18,7 @@ const allowedOrigins = ['https://ai.pixelverse.tech'];
 
 let devMode = false;
 let devModeTimer = null;
-const adminPassword = 'a95XE5Is4dXlvHJDN95sZIDEJ0Ydm6YwDjFz8s6N16yYjk3RkB'; 
+const adminPassword = env.process.ADMIN_PASSWORD; 
 
 // Setup CORS middleware for all routes except dev mode and identity
 app.use((req, res, next) => {
@@ -113,14 +113,9 @@ app.post('/securityshield/v0/identity/devmode', allowAllOrigins, checkPassword, 
   `);
 });
 
-// API status - general status of whole API
+// API Home
 app.get('/', (req, res) => {
   res.json({ status: 'Welcome to PixelVerse Systems API.' });
-});
-
-// API status - general status of whole API
-app.get('/ping', (req, res) => {
-  res.json({ status: 'PixelVerse Systems API is up and running. All checks return normal. Please email contact@pixelverse.tech if you experience any errors.' });
 });
 
 // API status - general status of whole API
@@ -131,6 +126,11 @@ app.get('/ping', (req, res) => {
 // Status - see if SecurityShield is active
 app.get('/securityshield/v1/status', checkOrigin, (req, res) => {
   res.json({ status: 'SecurityShield is currently active.' });
+});
+
+// Dev Mode Status
+app.get('/securityshield/v0/devmode', (req, res) => {
+  res.json({ status: devMode });
 });
 
 // Log - returns with request info
@@ -145,27 +145,27 @@ app.get('/securityshield/v1/log', (req, res) => {
 
 // Google Gemini API Key (restricted access)
 app.post('/securityshield/v1/KJHG88293543', checkOrigin, (req, res) => {
-  res.json({ apiKey: 'google-gemini-api' });
+  res.json({ apiKey: env.process.GOOGLE_GEMINI_API_KEY });
 });
 
 // OpenAI API Key (restricted access)
 app.post('/securityshield/v1/DHGJ35274528', checkOrigin, (req, res) => {
-  res.json({ apiKey: 'openai-api' });
+  res.json({ apiKey: env.process.OPENAI_API_KEY });
 });
 
 // Groq API Key (restricted access)
 app.post('/securityshield/v1/GNDO38562846', checkOrigin, (req, res) => {
-  res.json({ apiKey: 'groq-api' });
+  res.json({ apiKey: env.process.GROQ_API_KEY });
 });
 
 // ElevenLabs API Key (restricted access)
 app.post('/securityshield/v1/WIFN48264853', checkOrigin, (req, res) => {
-  res.json({ apiKey: 'elevenlabs-api' });
+  res.json({ apiKey: env.process.ELEVENLABS_API_KEY });
 });
 
 // BETA test
 app.post('/securityshield/beta/KJHG88293543', (req, res) => {
-  res.json({ apiKey: 'google-gemini-api' });
+  res.json({ apiKey: 'pxvsai-34872983482HDSJAK' });
 });
 
 const PORT = process.env.PORT || 3000;
