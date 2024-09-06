@@ -88,19 +88,13 @@ app.get('/securityshield/v1/log', (req, res) => {
   res.json(requestDetails);
 });
 
-// Allow all origins only for the dev mode activation routes
-function checkOriginForDevMode(req, res, next) {
-  const origin = req.get('origin');
-  // Allow requests to dev mode routes from any origin
-  if (origin) {
-    next(); // allow all origins temporarily for dev mode activation
-  } else {
-    res.status(403).json({ error: 'Access not allowed.' });
-  }
+// For dev mode activation & securityshield identity, allow all origins
+function allowAllOrigins(next) {
+  next();
 }
 
-// Admin UI Dashboard (displays password input form)
-app.get('/securityshield/v0/identity', checkOriginForDevMode, (req, res) => {
+// Admin UI Dashboard
+app.get('/securityshield/v0/identity', allowAllOrigins, (req, res) => {
   res.send(`
     <h1>SecurityShield Needs to Verify Your Identity</h1>
     <form action="/securityshield/v0/identity" method="post">
@@ -111,8 +105,8 @@ app.get('/securityshield/v0/identity', checkOriginForDevMode, (req, res) => {
   `);
 });
 
-// Admin UI Dashboard (password protected, POST request)
-app.post('/securityshield/v0/identity', checkOriginForDevMode, checkPassword, (req, res) => {
+// Admin UI Dashboard 
+app.post('/securityshield/v0/identity', allowAllOrigins, checkPassword, (req, res) => {
   res.send(`
     <h1>SecurityShield Dashboard</h1>
     <p>Welcome, Admin!</p>
@@ -124,12 +118,16 @@ app.post('/securityshield/v0/identity', checkOriginForDevMode, checkPassword, (r
   `);
 });
 
-// Dev Mode - 10 minutes
-app.post('/securityshield/v0/identity/devmode', checkOriginForDevMode, checkPassword, (req, res) => {
+// Enable Dev Mode
+app.post('/securityshield/v0/identity/devmode', allowAllOrigins, checkPassword, (req, res) => {
   devMode = true;
+  
+  // clear timer if it exists
   if (devModeTimer) {
     clearTimeout(devModeTimer);
   }
+
+  // set 10 minute timer
   devModeTimer = setTimeout(() => {
     devMode = false;
   }, 10 * 60 * 1000);
