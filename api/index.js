@@ -20,30 +20,36 @@ let devMode = false;
 let devModeTimer = null;
 const adminPassword = 'a95XE5Is4dXlvHJDN95sZIDEJ0Ydm6YwDjFz8s6N16yYjk3RkB'; 
 
-// Setup CORS middleware
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin) || devMode) {
-      callback(null, true);  // Allow requests from allowed origins or in dev mode
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
+// Setup CORS middleware for all routes except dev mode and identity
+app.use((req, res, next) => {
+  if (req.path.startsWith('/securityshield/v0/identity') || devMode) {
+    next(); // Bypass CORS for identity routes and dev mode
+  } else {
+    cors({
+      origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin) || devMode) {
+          callback(null, true);  // Allow requests from allowed origins or in dev mode
+        } else {
+          callback(new Error('Not allowed by CORS'));
+        }
+      }
+    })(req, res, next);
   }
-}));
+});
 
 // Handle preflight requests
 app.options('*', cors());
 
-// restrict access using Middleware based on the request origin
+// Middleware to handle origin check
 function checkOrigin(req, res, next) {
   const origin = req.get('origin');
   
   if (devMode) {
     next(); // In dev mode, allow all origins
-  } else if (origin === allowedOrigin) {
+  } else if (allowedOrigins.includes(origin)) {
     next(); // Allow if from the correct origin
   } else {
-    res.status(403).json({ error: 'An unknown error occured' });
+    res.status(403).json({ error: 'An unknown error occurred' });
   }
 }
 
@@ -57,39 +63,9 @@ function checkPassword(req, res, next) {
   }
 }
 
-// API status - general status of whole API
-app.get('/', (req, res) => {
-  res.json({ status: 'Welcome to PixelVerse Systems API.' });
-});
-
-// API status - general status of whole API
-app.get('/ping', (req, res) => {
-  res.json({ status: 'PixelVerse Systems API is up and running. All checks return normal. Please email contact@pixelverse.tech if you experience any errors.' });
-});
-
-// API status - general status of whole API
-app.get('/ping', (req, res) => {
-  res.json({ status: 'PixelVerse Systems API is up and running. All checks return normal. Please email contact@pixelverse.tech if you experience any errors.' });
-});
-
-// Status - see if SecurityShield is active
-app.get('/securityshield/v1/status', checkOrigin, (req, res) => {
-  res.json({ status: 'SecurityShield is currently active.' });
-});
-
-// Log - returns with request info
-app.get('/securityshield/v1/log', (req, res) => {
-  const requestDetails = {
-    method: req.method,
-    url: req.url,
-    headers: req.headers,
-  };
-  res.json(requestDetails);
-});
-
-// For dev mode activation & securityshield identity, allow all origins
+// Allow all origins for dev mode and identity routes
 function allowAllOrigins(req, res, next) {
-  next();
+  next(); // Allow any origin for these routes
 }
 
 // Admin UI Dashboard
@@ -104,7 +80,7 @@ app.get('/securityshield/v0/identity', allowAllOrigins, (req, res) => {
   `);
 });
 
-// Admin UI Dashboard 
+// Admin UI Dashboard (POST to enable dev mode)
 app.post('/securityshield/v0/identity', allowAllOrigins, checkPassword, (req, res) => {
   res.send(`
     <h1>SecurityShield Dashboard</h1>
