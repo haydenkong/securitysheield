@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors');
 const app = express();
 
 app.use(express.json());
@@ -12,38 +13,59 @@ require('dotenv').config();
 // use chat router under the /chat path
 app.use('/chat', chatRouter);
 
-const allowedOrigin = 'https://ai.pixelverse.tech';
-const adminPassword = 'a95XE5Is4dXlvHJDN95sZIDEJ0Ydm6YwDjFz8s6N16yYjk3RkB'; 
+// Define allowed origins
+const allowedOrigins = ['https://ai.pixelverse.tech'];
+
 let devMode = false;
 let devModeTimer = null;
+const adminPassword = 'a95XE5Is4dXlvHJDN95sZIDEJ0Ydm6YwDjFz8s6N16yYjk3RkB'; 
 
-// restrict access using Middleware based on the request 
+// Setup CORS middleware
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin) || devMode) {
+      callback(null, true);  // Allow requests from allowed origins or in dev mode
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  }
+}));
+
+// Handle preflight requests
+app.options('*', cors());
+
+// restrict access using Middleware based on the request origin
 function checkOrigin(req, res, next) {
   if (devMode) {
     next(); // allow all traffic in dev mode
   } else {
     const origin = req.get('origin');
-    if (origin === allowedOrigin) {
+    if (allowedOrigins.includes(origin)) {
       next(); // move on if request is from allowed origin
     } else {
-      res.status(403).json({ error: 'An unknown error occured.' });
+      res.status(403).json({ error: 'An unknown error occurred.' });
     }
   }
 }
 
-// Admin psw check middleware
+// Admin password check middleware
 function checkPassword(req, res, next) {
   const password = req.body.password;
   if (password === adminPassword) {
     next();
   } else {
-    res.status(403).json({ error: 'An unknown error occured.' });
+    res.status(403).json({ error: 'An unknown error occurred.' });
   }
 }
 
 // API status - general status of whole API
 app.get('/', (req, res) => {
   res.json({ status: 'Welcome to PixelVerse Systems API.' });
+});
+
+// API status - general status of whole API
+app.get('/ping', (req, res) => {
+  res.json({ status: 'PixelVerse Systems API is up and running. All checks return normal. Please email contact@pixelverse.tech if you experience any errors.' });
 });
 
 // API status - general status of whole API
