@@ -18,7 +18,7 @@ const allowedOrigins = ['https://ai.pixelverse.tech'];
 
 let devMode = false;
 let devModeTimer = null;
-const adminPassword = env.process.ADMIN_PASSWORD; 
+const adminPassword = process.env.ADMIN_PASSWORD; 
 
 // Setup CORS middleware for all routes except dev mode and identity
 app.use((req, res, next) => {
@@ -145,22 +145,22 @@ app.get('/securityshield/v1/log', (req, res) => {
 
 // Google Gemini API Key (restricted access)
 app.post('/securityshield/v1/KJHG88293543', checkOrigin, (req, res) => {
-  res.json({ apiKey: env.process.GOOGLE_GEMINI_API_KEY });
+  res.json({ apiKey: process.env.GOOGLE_GEMINI_API_KEY });
 });
 
 // OpenAI API Key (restricted access)
 app.post('/securityshield/v1/DHGJ35274528', checkOrigin, (req, res) => {
-  res.json({ apiKey: env.process.OPENAI_API_KEY });
+  res.json({ apiKey: process.env.OPENAI_API_KEY });
 });
 
 // Groq API Key (restricted access)
 app.post('/securityshield/v1/GNDO38562846', checkOrigin, (req, res) => {
-  res.json({ apiKey: env.process.GROQ_API_KEY });
+  res.json({ apiKey: process.env.GROQ_API_KEY });
 });
 
 // ElevenLabs API Key (restricted access)
 app.post('/securityshield/v1/WIFN48264853', checkOrigin, (req, res) => {
-  res.json({ apiKey: env.process.ELEVENLABS_API_KEY });
+  res.json({ apiKey: process.env.ELEVENLABS_API_KEY });
 });
 
 // BETA test
