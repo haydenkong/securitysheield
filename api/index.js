@@ -1,22 +1,16 @@
 const express = require('express');
-const cors = require('cors');
 const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// temp chat
 const chatRouter = require('./chat');
-
 require('dotenv').config();
 
-// use chat router under the /chat path
 app.use('/chat', chatRouter);
 
-// Define allowed origins
 const allowedOrigins = ['https://ai.pixelverse.tech'];
 
-// Define always accessible routes
 const alwaysAccessibleRoutes = [
   '/securityshield/v0/identity',
   '/ping',
@@ -28,38 +22,42 @@ const alwaysAccessibleRoutes = [
 
 let devMode = false;
 let devModeTimer = null;
-const adminPassword = process.env.ADMIN_PASSWORD; 
+const adminPassword = process.env.ADMIN_PASSWORD;
 
-// CORS configuration
-const corsOptions = {
-  origin: function (origin, callback) {
-    if (devMode || !origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-};
-
-// Apply CORS middleware
-app.use(cors(corsOptions));
-
-// Middleware to handle origin check
+// Middleware to check origin for all requests
 function checkOrigin(req, res, next) {
-  const origin = req.get('origin');
-  if (devMode || alwaysAccessibleRoutes.some(route => req.path.startsWith(route))) {
-    next();
-  } else if (origin && allowedOrigins.includes(origin)) {
-    next();
-  } else {
-    res.status(403).json({ error: 'Access denied' });
+  const origin = req.get('origin') || req.get('referer') || req.get('host');
+  
+  if (alwaysAccessibleRoutes.some(route => req.path.startsWith(route))) {
+    return next();
   }
+
+  if (devMode) {
+    return next();
+  }
+
+  if (origin && allowedOrigins.includes(origin)) {
+    return next();
+  }
+
+  return res.status(403).json({ error: 'Access denied' });
 }
 
 // Apply checkOrigin middleware to all routes
 app.use(checkOrigin);
+
+// CORS middleware (for browser requests)
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', allowedOrigins.join(','));
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204);
+  }
+  
+  next();
+});
 
 // Admin password check middleware
 function checkPassword(req, res, next) {
@@ -100,12 +98,10 @@ app.post('/securityshield/v0/identity', checkPassword, (req, res) => {
 app.post('/securityshield/v0/identity/devmode', checkPassword, (req, res) => {
   devMode = true;
   
-  // clear timer if it exists
   if (devModeTimer) {
     clearTimeout(devModeTimer);
   }
 
-  // set 10 minute timer
   devModeTimer = setTimeout(() => {
     devMode = false;
     console.log('Dev mode disabled after 10 minutes');
@@ -122,12 +118,12 @@ app.get('/', (req, res) => {
   res.json({ status: 'Welcome to PixelVerse Systems API.' });
 });
 
-// API status - general status of whole API
+// API status
 app.get('/ping', (req, res) => {
   res.json({ status: 'PixelVerse Systems API is up and running. All checks return normal. Please email contact@pixelverse.tech if you experience any errors.' });
 });
 
-// Status - see if SecurityShield is active
+// SecurityShield status
 app.get('/securityshield/v1/status', (req, res) => {
   res.json({ status: 'SecurityShield is currently active.' });
 });
@@ -137,7 +133,7 @@ app.get('/securityshield/v0/devmode', (req, res) => {
   res.json({ status: devMode });
 });
 
-// Log - returns with request info
+// Log
 app.get('/securityshield/v1/log', (req, res) => {
   const requestDetails = {
     method: req.method,
@@ -147,24 +143,18 @@ app.get('/securityshield/v1/log', (req, res) => {
   res.json(requestDetails);
 });
 
-// Google Gemini API Key (restricted access)
-app.post('/securityshield/v1/KJHG88293543', (req, res) => {
-  res.json({ apiKey: process.env.GOOGLE_GEMINI_API_KEY });
-});
+// Restricted routes (API keys)
+const restrictedRoutes = [
+  { path: '/securityshield/v1/KJHG88293543', key: 'GOOGLE_GEMINI_API_KEY' },
+  { path: '/securityshield/v1/DHGJ35274528', key: 'OPENAI_API_KEY' },
+  { path: '/securityshield/v1/GNDO38562846', key: 'GROQ_API_KEY' },
+  { path: '/securityshield/v1/WIFN48264853', key: 'ELEVENLABS_API_KEY' },
+];
 
-// OpenAI API Key (restricted access)
-app.post('/securityshield/v1/DHGJ35274528', (req, res) => {
-  res.json({ apiKey: process.env.OPENAI_API_KEY });
-});
-
-// Groq API Key (restricted access)
-app.post('/securityshield/v1/GNDO38562846', (req, res) => {
-  res.json({ apiKey: process.env.GROQ_API_KEY });
-});
-
-// ElevenLabs API Key (restricted access)
-app.post('/securityshield/v1/WIFN48264853', (req, res) => {
-  res.json({ apiKey: process.env.ELEVENLABS_API_KEY });
+restrictedRoutes.forEach(route => {
+  app.post(route.path, (req, res) => {
+    res.json({ apiKey: process.env[route.key] });
+  });
 });
 
 // BETA test
