@@ -36,15 +36,14 @@ app.options('*', cors());
 
 // restrict access using Middleware based on the request origin
 function checkOrigin(req, res, next) {
+  const origin = req.get('origin');
+  
   if (devMode) {
-    next(); // allow all traffic in dev mode
+    next(); // In dev mode, allow all origins
+  } else if (origin === allowedOrigin) {
+    next(); // Allow if from the correct origin
   } else {
-    const origin = req.get('origin');
-    if (allowedOrigins.includes(origin)) {
-      next(); // move on if request is from allowed origin
-    } else {
-      res.status(403).json({ error: 'An unknown error occurred.' });
-    }
+    res.status(403).json({ error: 'An unknown error occured' });
   }
 }
 
