@@ -88,8 +88,19 @@ app.get('/securityshield/v1/log', (req, res) => {
   res.json(requestDetails);
 });
 
+// Allow all origins only for the dev mode activation routes
+function checkOriginForDevMode(req, res, next) {
+  const origin = req.get('origin');
+  // Allow requests to dev mode routes from any origin
+  if (origin) {
+    next(); // allow all origins temporarily for dev mode activation
+  } else {
+    res.status(403).json({ error: 'Access not allowed.' });
+  }
+}
+
 // Admin UI Dashboard (displays password input form)
-app.get('/securityshield/v0/identity', (req, res) => {
+app.get('/securityshield/v0/identity', checkOriginForDevMode, (req, res) => {
   res.send(`
     <h1>SecurityShield Needs to Verify Your Identity</h1>
     <form action="/securityshield/v0/identity" method="post">
@@ -101,20 +112,20 @@ app.get('/securityshield/v0/identity', (req, res) => {
 });
 
 // Admin UI Dashboard (password protected, POST request)
-app.post('/securityshield/v0/identity', checkPassword, (req, res) => {
+app.post('/securityshield/v0/identity', checkOriginForDevMode, checkPassword, (req, res) => {
   res.send(`
     <h1>SecurityShield Dashboard</h1>
     <p>Welcome, Admin!</p>
     <form action="/securityshield/v0/identity/devmode" method="post">
       <input type="hidden" name="password" value="${req.body.password}">
       <button type="submit">Enable Dev Mode (10 minutes)</button>
-      <p>Enabling dev mode allows traffic from any url for 10 minutes. Be careful!</p>
+      <p>Enabling dev mode allows traffic from any URL for 10 minutes. Be careful!</p>
     </form>
   `);
 });
 
 // Dev Mode - 10 minutes
-app.post('/securityshield/v0/identity/devmode', checkPassword, (req, res) => {
+app.post('/securityshield/v0/identity/devmode', checkOriginForDevMode, checkPassword, (req, res) => {
   devMode = true;
   if (devModeTimer) {
     clearTimeout(devModeTimer);
