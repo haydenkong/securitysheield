@@ -51,7 +51,7 @@ function checkOrigin(req, res, next) {
   const origin = req.get('origin');
   if (devMode || alwaysAccessibleRoutes.some(route => req.path.startsWith(route))) {
     next();
-  } else if (allowedOrigins.includes(origin)) {
+  } else if (origin && allowedOrigins.includes(origin)) {
     next();
   } else {
     res.status(403).json({ error: 'Access denied' });
