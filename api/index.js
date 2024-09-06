@@ -32,25 +32,24 @@ const adminPassword = process.env.ADMIN_PASSWORD;
 
 // Setup CORS middleware for all routes
 app.use((req, res, next) => {
+  const origin = req.headers.origin;
   if (devMode || alwaysAccessibleRoutes.some(route => req.path.startsWith(route))) {
-    next(); // Bypass CORS for dev mode and always-accessible routes
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    next();
+  } else if (allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    next();
   } else {
-    cors({
-      origin: function (origin, callback) {
-        if (!origin || allowedOrigins.includes(origin)) {
-          callback(null, true);
-        } else {
-          callback(new Error('Not allowed by CORS'));
-        }
-      }
-    })(req, res, next);
+    res.status(403).json({ error: 'Not allowed by CORS' });
   }
 });
 
 // Handle preflight requests
 app.options('*', cors());
 
-// Middleware to handle origin check
+// Middleware to handle origin check (now only used for non-CORS checks)
 function checkOrigin(req, res, next) {
   if (devMode || alwaysAccessibleRoutes.some(route => req.path.startsWith(route))) {
     next(); // Allow if in dev mode or it's an always-accessible route
