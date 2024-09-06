@@ -16,19 +16,29 @@ app.use('/chat', chatRouter);
 // Define allowed origins
 const allowedOrigins = ['https://ai.pixelverse.tech'];
 
+// Define always accessible routes
+const alwaysAccessibleRoutes = [
+  '/securityshield/v0/identity',
+  '/ping',
+  '/',
+  '/securityshield/v1/log',
+  '/securityshield/v0/devmode',
+  '/securityshield/v1/status'
+];
+
 let devMode = false;
 let devModeTimer = null;
 const adminPassword = process.env.ADMIN_PASSWORD; 
 
-// Setup CORS middleware for all routes except dev mode and identity
+// Setup CORS middleware for all routes
 app.use((req, res, next) => {
-  if (req.path.startsWith('/securityshield/v0/identity') || devMode) {
-    next(); // Bypass CORS for identity routes and dev mode
+  if (devMode || alwaysAccessibleRoutes.some(route => req.path.startsWith(route))) {
+    next(); // Bypass CORS for dev mode and always-accessible routes
   } else {
     cors({
       origin: function (origin, callback) {
-        if (!origin || allowedOrigins.includes(origin) || devMode) {
-          callback(null, true);  // Allow requests from allowed origins or in dev mode
+        if (!origin || allowedOrigins.includes(origin)) {
+          callback(null, true);
         } else {
           callback(new Error('Not allowed by CORS'));
         }
@@ -42,14 +52,15 @@ app.options('*', cors());
 
 // Middleware to handle origin check
 function checkOrigin(req, res, next) {
-  const origin = req.get('origin');
-  
-  if (devMode) {
-    next(); // In dev mode, allow all origins
-  } else if (allowedOrigins.includes(origin)) {
-    next(); // Allow if from the correct origin
+  if (devMode || alwaysAccessibleRoutes.some(route => req.path.startsWith(route))) {
+    next(); // Allow if in dev mode or it's an always-accessible route
   } else {
-    res.status(403).json({ error: 'An unknown error occurred' });
+    const origin = req.get('origin');
+    if (allowedOrigins.includes(origin)) {
+      next(); // Allow if from the correct origin
+    } else {
+      res.status(403).json({ error: 'An unknown error occurred' });
+    }
   }
 }
 
@@ -63,13 +74,8 @@ function checkPassword(req, res, next) {
   }
 }
 
-// Allow all origins for dev mode and identity routes
-function allowAllOrigins(req, res, next) {
-  next(); // Allow any origin for these routes
-}
-
 // Admin UI Dashboard
-app.get('/securityshield/v0/identity', allowAllOrigins, (req, res) => {
+app.get('/securityshield/v0/identity', (req, res) => {
   res.send(`
     <h1>SecurityShield Needs to Verify Your Identity</h1>
     <form action="/securityshield/v0/identity" method="post">
@@ -81,7 +87,7 @@ app.get('/securityshield/v0/identity', allowAllOrigins, (req, res) => {
 });
 
 // Admin UI Dashboard (POST to enable dev mode)
-app.post('/securityshield/v0/identity', allowAllOrigins, checkPassword, (req, res) => {
+app.post('/securityshield/v0/identity', checkPassword, (req, res) => {
   res.send(`
     <h1>SecurityShield Dashboard</h1>
     <p>Welcome, Admin!</p>
@@ -94,7 +100,7 @@ app.post('/securityshield/v0/identity', allowAllOrigins, checkPassword, (req, re
 });
 
 // Enable Dev Mode
-app.post('/securityshield/v0/identity/devmode', allowAllOrigins, checkPassword, (req, res) => {
+app.post('/securityshield/v0/identity/devmode', checkPassword, (req, res) => {
   devMode = true;
   
   // clear timer if it exists
