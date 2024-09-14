@@ -164,6 +164,10 @@ app.post('/securityshield/beta/KJHG88293543', (req, res) => {
 });
 
 // URL TO TEXT (post a url and then return with all the text in that website)
+// how to use
+// POST /services/urltext
+// { "url": "https://www.pixelverse.tech" }
+// response: { "text": "..." }
 app.post('/services/urltext', async (req, res) => {
   const { url } = req.body;
   if (!url) {
@@ -173,7 +177,7 @@ app.post('/services/urltext', async (req, res) => {
   try {
     const response = await fetch(url);
     const text = await response.text();
-    res.json({ text });
+    res.send(text);
   } catch (error) {
     res.status(500).json({ error: 'Could not fetch URL', details: error.message });
   }
