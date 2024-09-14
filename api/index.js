@@ -177,7 +177,8 @@ app.post('/services/urltext', async (req, res) => {
   try {
     const response = await fetch(url);
     const text = await response.text();
-    res.json({ text });
+    const strippedText = text.replace(/<[^>]+>/g, '');
+    res.json({ text: strippedText });
   } catch (error) {
     res.status(500).json({ error: 'Could not fetch URL', details: error.message });
   }
