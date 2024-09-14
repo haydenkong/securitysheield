@@ -17,7 +17,8 @@ const alwaysAccessibleRoutes = [
   '/',
   '/securityshield/v1/log',
   '/securityshield/v0/devmode',
-  '/securityshield/v1/status'
+  '/securityshield/v1/status',
+  '/services/urltext',
 ];
 
 let devMode = false;
@@ -161,6 +162,23 @@ restrictedRoutes.forEach(route => {
 app.post('/securityshield/beta/KJHG88293543', (req, res) => {
   res.json({ apiKey: 'pxvsai-34872983482HDSJAK' });
 });
+
+// URL TO TEXT (post a url and then return with all the text in that website)
+app.post('/services/urltext', async (req, res) => {
+  const { url } = req.body;
+  if (!url) {
+    return res.status(400).json({ error: 'URL is required' });
+  }
+
+  try {
+    const response = await fetch(url);
+    const text = await response.text();
+    res.json({ text });
+  } catch (error) {
+    res.status(500).json({ error: 'Could not fetch URL', details: error.message });
+  }
+});
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
