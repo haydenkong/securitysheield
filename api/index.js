@@ -1,6 +1,5 @@
 const express = require('express');
 const puppeteer = require('puppeteer');
-const Cerebras = require('@cerebras/cerebras_cloud_sdk');
 const app = express();
 
 app.use(express.json());
@@ -199,53 +198,6 @@ app.post('/services/urltext', async (req, res) => {
       await browser.close();
     }
     res.status(500).json({ error: 'Could not fetch URL', details: error.message });
-  }
-});
-
-// API
-// Cerebras AI setup
-const cerebras = new Cerebras({
-  apiKey: 'csk-86mjxffrtw4ndkxy3fw9f9jv3yjm2tvknxfc4j8xj2xptphp' 
-});
-
-// System prompt for Cerebras AI
-const systemPrompt = {
-  "role": "system",
-  "content": "Hello, AI! Your task is to assist users by providing thoughtful and comprehensive responses. To ensure quality in your answers, follow these guidelines:\n    \n            Understand the Question:\n            •\tCarefully read the user's input.\n            •\tIdentify the key components and objectives of the question.\n    \n            Thinking Process:\n            •\tEngage in a detailed internal dialogue using tags to simulate the thought process.\n            •\tConsider different angles and perspectives related to the question.\n            •\tAssess the context, priorities, and any potential implications.\n    \n            Research and Validate:\n            •\tVerify facts and data if necessary.\n            •\tConsider reliable sources and ensure accuracy.\n    \n            Develop a Structured Response:\n            •\tOrganize your answer logically.\n            •\tBreak down complex information into digestible parts.\n            •\tUse clear and concise language.\n    \n            Anticipate User Needs:\n            •\tThink about follow-up questions the user might have.\n            •\tProvide additional relevant information or suggestions.\n    \n            Feedback Loop:\n            •\tConclude with a summary or offer to elaborate further.\n    \n            Example Application of Process:\n    \n            User: \"How does photosynthesis work?\"\n    \n            - The user wants to understand photosynthesis. This involves the process in which plants convert light energy into chemical energy. - Key components include chlorophyll, sunlight, carbon dioxide, and water. - Consider the stages: light-dependent reactions and the Calvin cycle. - Validate: Ensure the explanation reflects current scientific understanding.\n            Response: \"Photosynthesis is the process by which plants, algae, and some bacteria convert light energy, usually from the sun, into chemical energy stored in glucose. It primarily occurs in the chloroplasts of plant cells. The process involves two main stages: the light-dependent reactions and the Calvin cycle. During the light-dependent reactions, sunlight is absorbed by chlorophyll, generating energy in the form of ATP and NADPH. In the Calvin cycle, ATP and NADPH are used to convert carbon dioxide and water into glucose. This process is vital for plant growth and oxygen production.\"\n    \n            By simulating a thorough internal thought process, you'll enhance the quality and reliability of your assistance!\n            Always include your thinking in <<div class=\"noshow\"> <</div> tags at the TOP OF YOUR RESPONSE which won't be shown to the user.\n            Your thinking should be step by step and logical on how to best assist the user. You are intelligent and capable of providing valuable insights and information. \n            You must label out every step of your thinking inside those tags, even if its seems a obvious or simple question/step. The more detailed thinking, the better the response. Always double check your answer. Ask yourself, am I 100% sure? Most of the time, you are wrong. Go back and redo the question again and compare the answers. Is it right or wrong? Are they different? If they are, try a third time. Print out all your thinking, no matter if its simple or not. This won't be shown to the user but it is crucial to help assisting the user. Don't just say you double checked, show all your working out.\n            Answers may not be that straightforward, so you must think logically and step by step. e.g 9.8 is bigger than 9.11 because 9.8 is 9 and 8/10 and 9.11 is 9 and 11/100. 8/10 is bigger than 11/100.\n            The UI will automatically hide your thinking process from the user so you can focus on providing the best possible answer. Always remember that the user won't be able to see your thinking process and only the content outside of the thinking tags.\n            Good luck!"
-};
-
-// AI Chat API endpoint
-app.post('/ai/chat', async (req, res) => {
-  const { messages } = req.body;
-
-  if (!messages || !Array.isArray(messages)) {
-    return res.status(400).json({ error: 'Invalid messages format.' });
-  }
-
-  try {
-    // Set up Cerebras chat stream
-    const stream = await cerebras.chat.completions.create({
-      messages: messages,
-      model: 'llama3.1-70b', // Or your preferred Cerebras model
-      stream: true,
-      // ... other parameters like max_tokens, temperature, etc.
-    });
-
-    // Stream the response back to the client
-    res.writeHead(200, {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
-      'Connection': 'keep-alive',
-    });
-
-    for await (const chunk of stream) {
-      const content = chunk.choices[0]?.delta?.content || '';
-      res.write(`data: ${JSON.stringify({ content })}\n\n`); 
-    }
-
-  } catch (error) {
-    console.error('Error with Cerebras AI:', error);
-    res.status(500).json({ error: 'AI chat request failed.' });
   }
 });
 
