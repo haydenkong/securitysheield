@@ -1,6 +1,9 @@
 const express = require('express');
 const puppeteer = require('puppeteer');
 const app = express();
+// groq api: import Groq from 'groq-sdk';
+import Groq from 'groq-sdk';
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -198,6 +201,33 @@ app.post('/services/urltext', async (req, res) => {
       await browser.close();
     }
     res.status(500).json({ error: 'Could not fetch URL', details: error.message });
+  }
+});
+
+app.post('/generate', async (req, res) => {
+  try {
+    const { messages, model } = req.body;
+    const stream = await groq.chat.completions.create({
+      messages,
+      model,
+      stream: true,  // Enable streaming
+    });
+
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+
+    for await (const chunk of stream) {
+      const content = chunk.choices[0]?.delta?.content || '';
+      if (content) {
+        res.write(`data: ${content}\n\n`);
+      }
+    }
+
+    res.write('data: [DONE]\n\n');  // End of stream
+    res.end();
+  } catch (error) {
+    res.status(500).send(`Error: ${error.message}`);
   }
 });
 
