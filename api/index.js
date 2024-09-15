@@ -243,8 +243,6 @@ app.post('/ai/chat', async (req, res) => {
       res.write(`data: ${JSON.stringify({ content })}\n\n`); 
     }
 
-    res.end(); 
-
   } catch (error) {
     console.error('Error with Cerebras AI:', error);
     res.status(500).json({ error: 'AI chat request failed.' });
