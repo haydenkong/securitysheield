@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@cerebras/cerebras_cloud_sdk": "^1.2.0",
     "@supabase/supabase-js": "^2.45.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
