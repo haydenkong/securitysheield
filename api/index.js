@@ -205,7 +205,7 @@ app.post('/services/urltext', async (req, res) => {
 // API
 // Cerebras AI setup
 const cerebras = new Cerebras({
-  apiKey: process.env['csk-86mjxffrtw4ndkxy3fw9f9jv3yjm2tvknxfc4j8xj2xptphp'] 
+  apiKey: 'csk-86mjxffrtw4ndkxy3fw9f9jv3yjm2tvknxfc4j8xj2xptphp' 
 });
 
 // System prompt for Cerebras AI
