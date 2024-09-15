@@ -23,6 +23,7 @@ const alwaysAccessibleRoutes = [
   '/securityshield/v0/devmode',
   '/securityshield/v1/status',
   '/services/urltext',
+  '/generate',
 ];
 
 let devMode = false;
