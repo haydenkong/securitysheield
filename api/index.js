@@ -174,12 +174,28 @@ app.post('/services/urltext', async (req, res) => {
     return res.status(400).json({ error: 'URL is required' });
   }
 
+  let browser;
   try {
-    const response = await fetch(url);
-    const text = await response.text();
-    const strippedText = text.replace(/<[^>]+>/g, '');
-    res.json({ text: strippedText });
+    browser = await puppeteer.launch();
+    const page = await browser.newPage();
+    
+    await page.goto(url, { waitUntil: 'networkidle0' });
+    
+    // Simulate Ctrl+A to select all text
+    await page.keyboard.down('Control');
+    await page.keyboard.press('A');
+    await page.keyboard.up('Control');
+    
+    // Copy the selected text
+    const text = await page.evaluate(() => window.getSelection().toString());
+    
+    await browser.close();
+    
+    res.json({ text: text.trim() });
   } catch (error) {
+    if (browser) {
+      await browser.close();
+    }
     res.status(500).json({ error: 'Could not fetch URL', details: error.message });
   }
 });
