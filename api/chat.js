@@ -187,5 +187,27 @@ router.get('/arcadeweb', async (req, res) => {
     }
 });
 
+// POST REQUEST that inserts in the supabase table - dt-contact
+router.post('/contact', async (req, res) => {
+    const { name, email, message } = req.body;
+
+    if (!name || !email || !message) {
+        return res.status(400).json({ error: 'Name, email, and message are required' });
+    }
+
+    try {
+        const { data, error } = await supabase
+            .from('dt-contact')
+            .insert([{ name, email, message, timestamp: new Date().toISOString() }]);
+
+        if (error) throw error;
+
+        res.status(200).json({ success: 'Message sent successfully', data });
+    } catch (error) {
+        console.error('Error saving message:', error);
+        res.status(500).json({ error: 'Could not save message', details: error.message });
+    }
+});
+
 
 module.exports = router;
