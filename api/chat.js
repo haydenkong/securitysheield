@@ -9,7 +9,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const chatOrigins = Array.isArray(process.env.CHAT_ORIGIN) 
   ? process.env.CHAT_ORIGIN 
-  : ['https://pixelverseit.github.io', 'https://ai.pixelverse.tech', 'https://haydenkong.dev', 'https://haydenkong.vercel.app'];
+  : ['https://pixelverseit.github.io', 'https://ai.pixelverse.tech', 'https://haydenkong.dev', 'https://haydenkong.vercel.app', 'http://127.0.0.1:5502/'];
 
 // Middleware CORS handler
 function handleCORS(req, res, next) {
