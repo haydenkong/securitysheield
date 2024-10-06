@@ -232,4 +232,21 @@ router.post('/logs', async (req, res) => {
         res.status(500).json({ error: 'Could not save log', details: error.message });
     }
 });
+
+router.get('/logs', async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from('pixelverseai-t1-logs')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        res.json(data);
+    } catch (error) {
+        console.error('Error loading logs:', error);
+        res.status(500).json({ error: 'Could not load logs', details: error.message });
+    }
+});
+
 module.exports = router;
