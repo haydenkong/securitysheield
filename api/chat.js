@@ -210,4 +210,26 @@ router.post('/contact', async (req, res) => {
 });
 
 
+// POST - table name is pixelverseai-t1-logs. post with user_msg, ai_msg, ai_model, created_at (timestamptz)
+// also, it should only accept repsonses from https://ai.pixelverse.tech
+router.post('/logs', async (req, res) => {
+    const { user_msg, ai_msg, ai_model } = req.body;
+
+    if (!user_msg || !ai_msg || !ai_model) {
+        return res.status(400).json({ error: 'user_msg, ai_msg, and ai_model are required' });
+    }
+
+    try {
+        const { data, error } = await supabase
+            .from('pixelverseai-t1-logs')
+            .insert([{ user_msg, ai_msg, ai_model, created_at: new Date().toISOString() }]);
+
+        if (error) throw error;
+
+        res.status(200).json({ success: 'Log saved successfully', data });
+    } catch (error) {
+        console.error('Error saving log:', error);
+        res.status(500).json({ error: 'Could not save log', details: error.message });
+    }
+});
 module.exports = router;
