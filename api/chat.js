@@ -249,14 +249,6 @@ router.get('/logs', async (req, res) => {
     }
 });
 
-
-                    // user_msg: userMessage,
-                    // ai_msg: aiMessage,
-                    // ai_model: aiModel,
-                    // feedback: feedback,
-                    // rating: type === 'up' ? 'positive' : 'negative'
-
-
 router.post('/feedbackt1', async (req, res) => {
     const { user_msg, ai_msg, ai_model, feedback, rating } = req.body;
 
