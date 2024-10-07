@@ -249,4 +249,33 @@ router.get('/logs', async (req, res) => {
     }
 });
 
+
+                    // user_msg: userMessage,
+                    // ai_msg: aiMessage,
+                    // ai_model: aiModel,
+                    // feedback: feedback,
+                    // rating: type === 'up' ? 'positive' : 'negative'
+
+
+router.post('/feedbackt1', async (req, res) => {
+    const { user_msg, ai_msg, ai_model, feedback, rating } = req.body;
+
+    if (!user_msg || !ai_msg || !ai_model || !rating) {
+        return res.status(400).json({ error: 'use_msg, ai_msg, ai_model, rating is missing' });
+    }
+
+    try {
+        const { data, error } = await supabase
+            .from('pixelverseai-t1-feedback')
+            .insert([{ user_msg, ai_msg, ai_model, feedback, rating, created_at: new Date().toISOString() }]);
+
+        if (error) throw error;
+
+        res.status(200).json({ success: 'Log saved successfully', data });
+    } catch (error) {
+        console.error('Error saving log:', error);
+        res.status(500).json({ error: 'Could not save log', details: error.message });
+    }
+});
+
 module.exports = router;
