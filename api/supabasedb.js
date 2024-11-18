@@ -7,6 +7,17 @@ const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// CORS middleware
+router.use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+    }
+    next();
+});
+
 // Get all distributions
 router.get('/distributions', async (req, res) => {
     const { data, error } = await supabase
@@ -16,7 +27,6 @@ router.get('/distributions', async (req, res) => {
 
     if (error) return res.status(500).json({ error });
     
-    res.setHeader('Access-Control-Allow-Origin', '*'); // Allow requests from any domain
     res.json(data);
 });
 
@@ -28,7 +38,6 @@ router.post('/distributions', async (req, res) => {
 
     if (error) return res.status(500).json({ error });
     
-    res.setHeader('Access-Control-Allow-Origin', '*'); // Allow requests from any domain
     res.json(data);
 });
 
