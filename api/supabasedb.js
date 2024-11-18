@@ -41,4 +41,44 @@ router.post('/distributions', async (req, res) => {
     res.json(data);
 });
 
+// Update distribution
+router.patch('/distributions/:id', async (req, res) => {
+    const { id } = req.params;
+    const updates = req.body;
+
+    const { data, error } = await supabase
+        .from('map')
+        .update(updates)
+        .eq('id', id);
+
+    if (error) return res.status(500).json({ error });
+    if (!data || data.length === 0) return res.status(404).json({ error: 'Record not found' });
+    
+    res.json(data[0]);
+});
+
+// Delete distribution
+router.delete('/distributions/:id', async (req, res) => {
+    const { id } = req.params;
+
+    const { data, error } = await supabase
+        .from('map')
+        .delete()
+        .eq('id', id);
+
+    if (error) return res.status(500).json({ error });
+    if (!data || data.length === 0) return res.status(404).json({ error: 'Record not found' });
+    
+    res.json({ success: true });
+});
+
+// Optional: Add error handling middleware
+router.use((error, req, res, next) => {
+    console.error('API Error:', error);
+    res.status(500).json({ 
+        error: 'Internal server error',
+        message: error.message 
+    });
+});
+
 module.exports = router;
