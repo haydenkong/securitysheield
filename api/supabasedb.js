@@ -46,30 +46,46 @@ router.patch('/distributions/:id', async (req, res) => {
     const { id } = req.params;
     const updates = req.body;
 
-    const { data, error } = await supabase
-        .from('map')
-        .update(updates)
-        .eq('id', id);
+    try {
+        const { data, error } = await supabase
+            .from('map')
+            .update(updates)
+            .eq('id', id)
+            .select(); // Add .select() to return updated record
 
-    if (error) return res.status(500).json({ error });
-    if (!data || data.length === 0) return res.status(404).json({ error: 'Record not found' });
-    
-    res.json(data[0]);
+        if (error) throw error;
+        if (!data || data.length === 0) {
+            return res.status(404).json({ error: 'Record not found' });
+        }
+
+        res.json(data[0]);
+    } catch (error) {
+        console.error('Update error:', error);
+        res.status(500).json({ error: error.message });
+    }
 });
 
 // Delete distribution
 router.delete('/distributions/:id', async (req, res) => {
     const { id } = req.params;
 
-    const { data, error } = await supabase
-        .from('map')
-        .delete()
-        .eq('id', id);
+    try {
+        const { data, error } = await supabase
+            .from('map')
+            .delete()
+            .eq('id', id)
+            .select(); // Add .select() to return deleted record
 
-    if (error) return res.status(500).json({ error });
-    if (!data || data.length === 0) return res.status(404).json({ error: 'Record not found' });
-    
-    res.json({ success: true });
+        if (error) throw error;
+        if (!data || data.length === 0) {
+            return res.status(404).json({ error: 'Record not found' });
+        }
+
+        res.json({ success: true, data: data[0] });
+    } catch (error) {
+        console.error('Delete error:', error);
+        res.status(500).json({ error: error.message });
+    }
 });
 
 // Optional: Add error handling middleware
