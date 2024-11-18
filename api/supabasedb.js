@@ -15,6 +15,8 @@ router.get('/distributions', async (req, res) => {
         .order('timestamp', { ascending: false });
 
     if (error) return res.status(500).json({ error });
+    
+    res.setHeader('Access-Control-Allow-Origin', '*'); // Allow requests from any domain
     res.json(data);
 });
 
@@ -25,6 +27,8 @@ router.post('/distributions', async (req, res) => {
         .insert([req.body]);
 
     if (error) return res.status(500).json({ error });
+    
+    res.setHeader('Access-Control-Allow-Origin', '*'); // Allow requests from any domain
     res.json(data);
 });
 
