@@ -6,9 +6,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 const chatRouter = require('./chat');
+const supabaseAPI = require('./supabasedb');
 require('dotenv').config();
 
 app.use('/chat', chatRouter);
+app.use('/supabase', supabaseAPI);
 
 const allowedOrigins = ['https://ai.pixelverse.tech'];
 
