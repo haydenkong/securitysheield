@@ -89,7 +89,7 @@ router.delete('/distributions/:id', async (req, res) => {
 });
 
 // Get leaderboard
-app.get('/sciencegame/leaderboard', async (req, res) => {
+router.get('/sciencegame/leaderboard', async (req, res) => {
     res.header('Access-Control-Allow-Origin', 'https://playrockmine.vercel.app');
     const { data, error } = await supabase
       .from('leaderboard')
@@ -104,7 +104,7 @@ app.get('/sciencegame/leaderboard', async (req, res) => {
   });
   
   // Add score
-  app.post('/sciencegame/score', async (req, res) => {
+  router.post('/sciencegame/score', async (req, res) => {
     res.header('Access-Control-Allow-Origin', 'https://playrockmine.vercel.app');
     const { name, score } = req.body;
     
