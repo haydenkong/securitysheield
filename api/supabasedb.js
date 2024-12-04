@@ -100,6 +100,9 @@ router.delete('/distributions/:id', async (req, res) => {
 
 // Get leaderboard
 router.get('/sciencegame/leaderboard', async (req, res) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET');
+    
     const { data, error } = await supabase
         .from('leaderboard')
         .select('*')
@@ -114,6 +117,10 @@ router.get('/sciencegame/leaderboard', async (req, res) => {
 
 // Add score
 router.post('/sciencegame/score', async (req, res) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'POST');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
+    
     const { name, score } = req.body;
 
     const { data, error } = await supabase
