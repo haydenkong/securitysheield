@@ -2,29 +2,22 @@ const express = require('express');
 const { createClient } = require('@supabase/supabase-js');
 const router = express.Router();
 
-// env variables
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Initialize Supabase client
+const supabase = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_ANON_KEY
+);
 
-// CORS middleware
+// Single permissive CORS middleware for all routes
 router.use((req, res, next) => {
-    const allowedOrigins = ['https://ai.pixelverse.tech', 'https://playrockmine.vercel.app'];
-    const origin = req.headers.origin;
-    
-    if (allowedOrigins.includes(origin)) {
-        res.setHeader('Access-Control-Allow-Origin', origin);
-        res.setHeader('Access-Control-Allow-Credentials', 'true');
-    }
-
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', '*');
+    res.header('Access-Control-Allow-Headers', '*');
     
     // Handle preflight
     if (req.method === 'OPTIONS') {
-        return res.status(200).end();
+        return res.sendStatus(200);
     }
-    
     next();
 });
 
@@ -36,7 +29,6 @@ router.get('/distributions', async (req, res) => {
         .order('timestamp', { ascending: false });
 
     if (error) return res.status(500).json({ error });
-    
     res.json(data);
 });
 
@@ -47,7 +39,6 @@ router.post('/distributions', async (req, res) => {
         .insert([req.body]);
 
     if (error) return res.status(500).json({ error });
-    
     res.json(data);
 });
 
@@ -56,93 +47,56 @@ router.patch('/distributions/:id', async (req, res) => {
     const { id } = req.params;
     const updates = req.body;
 
-    try {
-        const { data, error } = await supabase
-            .from('map')
-            .update(updates)
-            .eq('id', id)
-            .select(); // Add .select() to return updated record
+    const { data, error } = await supabase
+        .from('map')
+        .update(updates)
+        .eq('id', id)
+        .select();
 
-        if (error) throw error;
-        if (!data || data.length === 0) {
-            return res.status(404).json({ error: 'Record not found' });
-        }
-
-        res.json(data[0]);
-    } catch (error) {
-        console.error('Update error:', error);
-        res.status(500).json({ error: error.message });
-    }
+    if (error) return res.status(500).json({ error });
+    res.json(data);
 });
 
 // Delete distribution
 router.delete('/distributions/:id', async (req, res) => {
     const { id } = req.params;
 
-    try {
-        const { data, error } = await supabase
-            .from('map')
-            .delete()
-            .eq('id', id)
-            .select(); // Add .select() to return deleted record
+    const { data, error } = await supabase
+        .from('map')
+        .delete()
+        .eq('id', id)
+        .select();
 
-        if (error) throw error;
-        if (!data || data.length === 0) {
-            return res.status(404).json({ error: 'Record not found' });
-        }
-
-        res.json({ success: true, data: data[0] });
-    } catch (error) {
-        console.error('Delete error:', error);
-        res.status(500).json({ error: error.message });
-    }
+    if (error) return res.status(500).json({ error });
+    res.json(data);
 });
 
-// Get leaderboard
+// Get leaderboard 
 router.get('/sciencegame/leaderboard', async (req, res) => {
-    // Set CORS headers
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', '*');
-    res.header('Access-Control-Allow-Headers', '*');
-
     const { data, error } = await supabase
         .from('leaderboard')
         .select('*')
         .order('score', { ascending: false })
         .limit(10);
 
-    if (error) {
-        return res.status(500).json({ error: error.message });
-    }
+    if (error) return res.status(500).json({ error });
     res.json(data);
 });
 
 // Add score
 router.post('/sciencegame/score', async (req, res) => {
-    // Set CORS headers
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', '*');
-    res.header('Access-Control-Allow-Headers', '*');
-
-    const { name, score } = req.body;
-
     const { data, error } = await supabase
         .from('leaderboard')
-        .insert([{ name, score }]);
+        .insert([req.body]);
 
-    if (error) {
-        return res.status(500).json({ error: error.message });
-    }
+    if (error) return res.status(500).json({ error });
     res.json(data);
 });
-  
-// Optional: Add error handling middleware
+
+// Basic error handler
 router.use((error, req, res, next) => {
     console.error('API Error:', error);
-    res.status(500).json({ 
-        error: 'Internal server error',
-        message: error.message 
-    });
+    res.status(500).json({ error: error.message });
 });
 
 module.exports = router;
