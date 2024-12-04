@@ -100,9 +100,11 @@ router.delete('/distributions/:id', async (req, res) => {
 
 // Get leaderboard
 router.get('/sciencegame/leaderboard', async (req, res) => {
+    // Set CORS headers
     res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET');
-    
+    res.header('Access-Control-Allow-Methods', '*');
+    res.header('Access-Control-Allow-Headers', '*');
+
     const { data, error } = await supabase
         .from('leaderboard')
         .select('*')
@@ -117,10 +119,11 @@ router.get('/sciencegame/leaderboard', async (req, res) => {
 
 // Add score
 router.post('/sciencegame/score', async (req, res) => {
+    // Set CORS headers
     res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'POST');
-    res.header('Access-Control-Allow-Headers', 'Content-Type');
-    
+    res.header('Access-Control-Allow-Methods', '*');
+    res.header('Access-Control-Allow-Headers', '*');
+
     const { name, score } = req.body;
 
     const { data, error } = await supabase
@@ -132,7 +135,6 @@ router.post('/sciencegame/score', async (req, res) => {
     }
     res.json(data);
 });
-
   
 // Optional: Add error handling middleware
 router.use((error, req, res, next) => {
