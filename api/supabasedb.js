@@ -11,17 +11,20 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 router.use((req, res, next) => {
     const allowedOrigins = ['https://ai.pixelverse.tech', 'https://playrockmine.vercel.app'];
     const origin = req.headers.origin;
-
+    
     if (allowedOrigins.includes(origin)) {
         res.setHeader('Access-Control-Allow-Origin', origin);
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
     }
 
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     
+    // Handle preflight
     if (req.method === 'OPTIONS') {
-        return res.sendStatus(200);
+        return res.status(200).end();
     }
+    
     next();
 });
 
