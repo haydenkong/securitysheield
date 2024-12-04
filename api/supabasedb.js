@@ -97,33 +97,52 @@ router.delete('/distributions/:id', async (req, res) => {
 
 // Get leaderboard
 router.get('/sciencegame/leaderboard', async (req, res) => {
-    res.header('Access-Control-Allow-Origin', 'https://playrockmine.vercel.app');
+    const allowedOrigins = ['https://ai.pixelverse.tech', 'https://playrockmine.vercel.app'];
+    const origin = req.headers.origin;
+
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    }
+
     const { data, error } = await supabase
-      .from('leaderboard')
-      .select('*')
-      .order('score', { ascending: false })
-      .limit(10);
-  
+        .from('leaderboard')
+        .select('*')
+        .order('score', { ascending: false })
+        .limit(10);
+
     if (error) {
-      return res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
     res.json(data);
-  });
-  
-  // Add score
-  router.post('/sciencegame/score', async (req, res) => {
-    res.header('Access-Control-Allow-Origin', 'https://playrockmine.vercel.app');
+});
+
+// Add score
+router.post('/sciencegame/score', async (req, res) => {
+    const allowedOrigins = ['https://ai.pixelverse.tech', 'https://playrockmine.vercel.app'];
+    const origin = req.headers.origin;
+
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    }
+
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+    }
+
     const { name, score } = req.body;
-    
+
     const { data, error } = await supabase
-      .from('leaderboard')
-      .insert([{ name, score }]);
-  
+        .from('leaderboard')
+        .insert([{ name, score }]);
+
     if (error) {
-      return res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
     res.json(data);
-  });
+});
 
   
 // Optional: Add error handling middleware
