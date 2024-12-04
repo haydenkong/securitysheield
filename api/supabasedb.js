@@ -97,13 +97,6 @@ router.delete('/distributions/:id', async (req, res) => {
 
 // Get leaderboard
 router.get('/sciencegame/leaderboard', async (req, res) => {
-    const allowedOrigins = ['https://ai.pixelverse.tech', 'https://playrockmine.vercel.app'];
-    const origin = req.headers.origin;
-
-    if (allowedOrigins.includes(origin)) {
-        res.setHeader('Access-Control-Allow-Origin', origin);
-    }
-
     const { data, error } = await supabase
         .from('leaderboard')
         .select('*')
@@ -118,20 +111,6 @@ router.get('/sciencegame/leaderboard', async (req, res) => {
 
 // Add score
 router.post('/sciencegame/score', async (req, res) => {
-    const allowedOrigins = ['https://ai.pixelverse.tech', 'https://playrockmine.vercel.app'];
-    const origin = req.headers.origin;
-
-    if (allowedOrigins.includes(origin)) {
-        res.setHeader('Access-Control-Allow-Origin', origin);
-    }
-
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
-    if (req.method === 'OPTIONS') {
-        return res.sendStatus(200);
-    }
-
     const { name, score } = req.body;
 
     const { data, error } = await supabase
