@@ -12,10 +12,7 @@ require('dotenv').config();
 app.use('/chat', chatRouter);
 app.use('/supabase', supabaseAPI);
 
-const allowedOrigins = [
-  'https://ai.pixelverse.tech', 
-  'https://playrockmine.vercel.app'
-];
+const allowedOrigins = ['https://ai.pixelverse.tech'];
 
 const alwaysAccessibleRoutes = [
   '/securityshield/v0/identity',
