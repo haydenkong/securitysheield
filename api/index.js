@@ -7,10 +7,12 @@ app.use(express.urlencoded({ extended: true }));
 
 const chatRouter = require('./chat');
 const supabaseAPI = require('./supabasedb');
+const ebayRouter = require('./ebay');
 require('dotenv').config();
 
 app.use('/chat', chatRouter);
 app.use('/supabase', supabaseAPI);
+app.use('/ebay', ebayRouter);
 
 const allowedOrigins = ['https://ai.pixelverse.tech'];
 
@@ -21,7 +23,7 @@ const alwaysAccessibleRoutes = [
   '/securityshield/v1/log',
   '/securityshield/v0/devmode',
   '/securityshield/v1/status',
-  '/services/urltext',
+  '/services/urltext'
 ];
 
 let devMode = false;
